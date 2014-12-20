@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:rim="http://www.blackberry.com/ns/widgets"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="org.mrfuxi.cordova.gaeauth"
+        version="0.0.1">
+    <name>Google App Engine Authentication</name>
+    <description>Cordova Google App Engine authentication plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,account,gea,appengine</keywords>
+    <repo>https://github.com/mrfuxi/cordova-gea-auth.git</repo>
+    <issue>https://github.com/mrfuxi/cordova-gea-auth/issues</issue>
+
+    <js-module src="www/GAEAuth.js" name="GAEAuth">
+        <clobbers target="plugins.GAEAuth" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="GAEAuth" >
+                <param name="android-package" value="org.mrfuxi.cordova.gaeauth.GAEAuth"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/GAEAuth.java" target-dir="src/org/mrfuxi/cordova/gaeauth" />
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+            <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+            <uses-permission android:name="android.permission.INTERNET"/>
+        </config-file>
+    </platform>
+</plugin>
