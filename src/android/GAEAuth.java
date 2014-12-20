@@ -1,5 +1,6 @@
 package org.mrfuxi.cordova.gaeauth;
 
+import java.io.IOException;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -9,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.accounts.AccountManager;
+import android.accounts.AccountsException;
 import android.accounts.Account;
 
 
@@ -33,16 +35,13 @@ public class GAEAuth extends CordovaPlugin {
     * @return                  True if the action was valid, false if not.
     */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        switch (action) {
-            case "getAccounts":
-                callbackContext.success(getAccounts());
-                break;
-            case "getAuthToken":
-                callbackContext.success(getAuthToken(args.getString(0)));
-                break;
-            default:
-                callbackContext.error("GAEAuth." + action + " is not a supported function.");
-                return false;
+        if (action.equals("getAccounts")) {
+            callbackContext.success(getAccounts());
+        } else if (action.equals("getAuthToken")) {
+            callbackContext.success(getAuthToken(args.getString(0)));
+        } else {
+            callbackContext.error("GAEAuth." + action + " is not a supported function.");
+            return false;
         }
 
         return true;
@@ -52,13 +51,13 @@ public class GAEAuth extends CordovaPlugin {
         API
     */
 
-    private JSONArray getAccounts() {
+    private JSONArray getAccounts() throws JSONException {
         JSONArray accounts = new JSONArray();
 
         for (Account account: getGoogleAccounts()) {
             JSONObject obj = new JSONObject();
-            obj.put("type", a.type);
-            obj.put("name", a.name);
+            obj.put("type", account.type);
+            obj.put("name", account.name);
             accounts.put(obj);
         }
 
@@ -69,6 +68,7 @@ public class GAEAuth extends CordovaPlugin {
         Account account = getAccountForName(username);
 
         try {
+            AccountManager accountManager = currentAccountManager();
             return accountManager.blockingGetAuthToken(account, "ah", true);
         } catch (AccountsException e) {
             System.out.println("AccountsException");
@@ -85,15 +85,19 @@ public class GAEAuth extends CordovaPlugin {
         Helper methods
     */
 
+    private AccountManager currentAccountManager() {
+        return AccountManager.get(cordova.getActivity().getApplicationContext());
+    }
+
     private Account[] getGoogleAccounts() {
-        AccountManager accountManager = AccountManager.get(cordova.getActivity().getApplicationContext());
+        AccountManager accountManager = currentAccountManager();
         return accountManager.getAccountsByType("com.google");
     }
 
     private Account getAccountForName(String username) {
         Account[] accounts = getGoogleAccounts();
         if (accounts == null) {
-            return null
+            return null;
         }
 
         for (Account account : accounts) {
